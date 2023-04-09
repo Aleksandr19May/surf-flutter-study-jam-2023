@@ -40,7 +40,7 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
     void _check() {
       final login = controller.text;
 
-      if (login.contains('pdf')) {
+      if (RegExp(r'http.*pdf|https.*pdf').hasMatch(login)) {
         _errorText = null;
         saver.add(
             NewFile(newUrl: controller.text, fileName: '', isdownload: false));
@@ -48,12 +48,18 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         //  Navigator.of(context).pushNamed('/mainScreen');
         Navigator.of(context).pop();
         controller.text = '';
-         setState(() {});
+        setState(() {});
+         ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: Colors.green,
+      content: Text('Ссылка на файл успешно добавлена!'),
+      duration: Duration(seconds: 2),
+    ),
+  );
       } else {
         _errorText = 'Введите корректный Url';
         setState(() {});
       }
-     
     }
 
     return Scaffold(
@@ -61,31 +67,42 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         backgroundColor: Colors.grey.shade200,
         title: const Text(
           'Хранение билетов',
-          style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
         ),
       ),
-      body: listSaved.isEmpty ? Center(child: Text('Здесь пока ничего нет',style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),) : ListView.builder(
-        itemCount: listSaved.length,
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(
-            leading: Icon(Icons.train),
-            trailing: Icon(
-              Icons.cloud_download_rounded,
-              color: Colors.purple,
+      body: listSaved.isEmpty
+          ? const Center(
+              child: Text(
+                'Здесь пока ничего нет',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            )
+          : ListView.builder(
+              itemCount: listSaved.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: ListTile(
+                    leading: const Icon(Icons.train),
+                    trailing: const Icon(
+                      Icons.cloud_download_rounded,
+                      color: Colors.purple,
+                    ),
+                    title: Text(
+                      'Ticket ${index + 1}',
+                      style: TextStyle(color: Colors.purple.shade400),
+                    ),
+                  ),
+                );
+              },
             ),
-            title: Text(
-              'Ticket ${index + 1}',
-              style: TextStyle(color: Colors.purple.shade400),
-            ),
-          );
-        },
-      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            ElevatedButton(onPressed: deleteAll, child: Text('удалить все')),
+            ElevatedButton(
+                onPressed: deleteAll, child: const Text('удалить все')),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade100,
@@ -98,53 +115,54 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                   isScrollControlled: true,
                   context: context,
                   builder: (BuildContext context) {
-                    return Padding(
-                      padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom),
-                      child: SizedBox(
-                        height: 200,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
-                                child: TextField(
-                                  keyboardType: TextInputType.text,
-                                  controller: controller,
-                                  textAlign: TextAlign.start,
-                                  style: const TextStyle(fontSize: 20),
-                                  decoration: InputDecoration(
-                                      errorText: _errorText,
-                                      hintText: "Введите Url",
-                                      
-                                      labelText: 'Введите Url',
-                                      hintStyle: const TextStyle(
-                                          fontWeight: FontWeight.normal),
-                                      border: const OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(10))),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 20)),
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom),
+                        child: SizedBox(
+                          height: 200,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
+                                  child: TextField(
+                                    keyboardType: TextInputType.text,
+                                    controller: controller,
+                                    textAlign: TextAlign.start,
+                                    style: const TextStyle(fontSize: 20),
+                                    decoration: InputDecoration(
+                                        errorText: _errorText,
+                                        hintText: "Введите Url",
+                                        labelText: "Введите Url",
+                                        hintStyle: const TextStyle(
+                                            fontWeight: FontWeight.normal),
+                                        border: const OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(10))),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 20)),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(
-                                height: 15,
-                              ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStatePropertyAll(
-                                      Colors.brown.shade400),
+                                const SizedBox(
+                                  height: 15,
                                 ),
-                                child: const Text('Добавить',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 15)),
-                                onPressed: _check,
-                              ),
-                            ],
+                                ElevatedButton(
+                                  style: ButtonStyle(
+                                    backgroundColor: MaterialStatePropertyAll(
+                                        Colors.brown.shade400),
+                                  ),
+                                  child: const Text('Добавить',
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 15)),
+                                  onPressed: _check,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
