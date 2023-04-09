@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: TicketStoragePage(),
+      home: const TicketStoragePage(),
     );
   }
 }

@@ -1,9 +1,7 @@
 import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:path_provider/path_provider.dart';
 import 'package:surf_flutter_study_jam_2023/features/model.dart';
 
@@ -18,8 +16,6 @@ class TicketStoragePage extends StatefulWidget {
 }
 
 class _TicketStoragePageState extends State<TicketStoragePage> {
-  bool _downloading = false;
-  // bool downloaded = false;
   late Box<NewFile> saver;
   @override
   void initState() {
@@ -79,7 +75,6 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         final directory = await getApplicationDocumentsDirectory();
         final filePath = '${directory.path}/file.pdf';
         setState(() {
-          
           listSaved[index].changeStatus(DownloadStatus.inProgress);
         });
         // Загрузка файла PDF с сервера
@@ -96,11 +91,8 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
           ),
         );
         setState(() {
-          
           listSaved[index].changeStatus(DownloadStatus.finished);
         });
-
-      
       } catch (e) {
         setState(() {
           listSaved[index].changeStatus(DownloadStatus.finished);
@@ -133,7 +125,6 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
           : ListView.builder(
               itemCount: listSaved.length,
               itemBuilder: (BuildContext context, int index) {
-             
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: ListTile(
@@ -144,11 +135,14 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                         downloadPdf(listSaved[index].newUrl, index);
                       },
                       icon: Icon(
-                        listSaved[index].downloadStatus == DownloadStatus.finished.toString()
+                        listSaved[index].downloadStatus ==
+                                DownloadStatus.finished.toString()
                             ? Icons.check_circle
-                            : listSaved[index].downloadStatus == DownloadStatus.inProgress.toString()
+                            : listSaved[index].downloadStatus ==
+                                    DownloadStatus.inProgress.toString()
                                 ? Icons.pause_circle
                                 : Icons.cloud_download_rounded,
+                        size: 30,
                       ),
                       color: Colors.purple,
                     ),
@@ -156,9 +150,20 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                       backgroundColor: Colors.red,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
                     ),
-                    title: Text(
-                      'Ticket ${index + 1} ',
-                      style: TextStyle(color: Colors.purple.shade400),
+                    title: Row(
+                      children: [
+                        Text(
+                          'Ticket ${index + 1} ',
+                          style: TextStyle(color: Colors.purple.shade400),
+                        ),
+                        IconButton(
+                            onPressed: () {
+                              // PDFScreen(
+                              //   filePath: listSaved[index].newUrl,
+                              // );
+                            },
+                            icon: const Icon(Icons.remove_red_eye_sharp)),
+                      ],
                     ),
                   ),
                 );
@@ -173,7 +178,7 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
               padding: const EdgeInsets.only(right: 220.0),
               child: IconButton(
                   onPressed: deleteAll,
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.delete_forever,
                     color: Colors.red,
                     size: 30,
@@ -232,10 +237,10 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                                     backgroundColor: MaterialStatePropertyAll(
                                         Colors.brown.shade400),
                                   ),
+                                  onPressed: _check,
                                   child: const Text('Добавить',
                                       style: TextStyle(
                                           color: Colors.white, fontSize: 15)),
-                                  onPressed: _check,
                                 ),
                               ],
                             ),
@@ -259,4 +264,4 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
       ),
     );
   }
-}
+} 
