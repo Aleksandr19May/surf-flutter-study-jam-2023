@@ -1,9 +1,9 @@
-import 'dart:io';
+
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:path_provider/path_provider.dart';
 import 'package:surf_flutter_study_jam_2023/features/model.dart';
 
@@ -11,7 +11,7 @@ bool right = true;
 
 /// Экран “Хранения билетов”.
 class TicketStoragePage extends StatefulWidget {
-  TicketStoragePage({Key? key}) : super(key: key);
+  const TicketStoragePage({Key? key}) : super(key: key);
 
   @override
   State<TicketStoragePage> createState() => _TicketStoragePageState();
@@ -34,7 +34,8 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
   var controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    List listSaved = saver.values.toList();
+    List <NewFile> listSaved = saver.values.toList();
+    
 
     String? _errorText = null;
 
@@ -51,7 +52,7 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         controller.text = '';
         setState(() {});
          ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
+    const SnackBar(
       backgroundColor: Colors.green,
       content: Text('Ссылка на файл успешно добавлена!'),
       duration: Duration(seconds: 2),
@@ -62,7 +63,33 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         setState(() {});
       }
     }
+Future<void> downloadPdf(String url) async {
+  Dio dio = Dio();
 
+  try {
+    // Определение директории, где будет сохранен файл PDF
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/file.pdf';
+
+    // Загрузка файла PDF с сервера
+    await dio.download(url, filePath);
+ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      backgroundColor: Colors.green,
+      content: Text('Файл загружен!'),
+      duration: Duration(seconds: 2),
+    ),);
+    // print('PDF загружен: $filePath');
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: Colors.red,
+      content: Text('Не удалось загрузить файл $e'),
+      duration: const Duration(seconds: 2),
+    ),);
+    // print('Ошибка загрузки PDF: $e');
+  }
+}
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade200,
@@ -86,8 +113,11 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                   child: ListTile(
                     leading: const Icon(Icons.train),
                     trailing: IconButton(
-                      onPressed: () {downloadPdf('https://journal-free.ru/download/dachnye-sekrety-11-noiabr-2019.pdf');},
-                      icon: Icon(Icons.cloud_download_rounded) ,
+                      onPressed: () {
+                       
+                        
+                        downloadPdf(listSaved[index].newUrl);},
+                      icon: const Icon(Icons.cloud_download_rounded) ,
                       color: Colors.purple,
                     ),
                     title: Text(
@@ -188,22 +218,7 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
 }
 
 
-Future<void> downloadPdf(String url) async {
-  Dio dio = Dio();
 
-  try {
-    // Определение директории, где будет сохранен файл PDF
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/file.pdf';
-
-    // Загрузка файла PDF с сервера
-    await dio.download(url, filePath);
-
-    print('PDF загружен: $filePath');
-  } catch (e) {
-    print('Ошибка загрузки PDF: $e');
-  }
-}
 
 
 
