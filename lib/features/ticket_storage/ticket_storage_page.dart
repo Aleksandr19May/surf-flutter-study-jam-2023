@@ -1,15 +1,42 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:surf_flutter_study_jam_2023/features/model.dart';
+
 bool right = true;
+
 /// Экран “Хранения билетов”.
-class TicketStoragePage extends StatelessWidget {
-  const TicketStoragePage({Key? key}) : super(key: key);
+class TicketStoragePage extends StatefulWidget {
+  TicketStoragePage({Key? key}) : super(key: key);
 
   @override
+  State<TicketStoragePage> createState() => _TicketStoragePageState();
+}
+
+class _TicketStoragePageState extends State<TicketStoragePage> {
+  late Box<NewFile> saver;
+  @override
+  void initState() {
+    super.initState();
+    saver = Hive.box<NewFile>('PDF');
+  }
+  void deleteAll() async {
+     saver = Hive.box<NewFile>(
+        'PDF'); 
+    await saver.clear();
+    setState(() {
+      
+    });
+  }
+
+  var controller = TextEditingController();
+  @override
   Widget build(BuildContext context) {
+    List listSaved = saver.values.toList();
+    print(listSaved);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade200,
@@ -19,15 +46,18 @@ class TicketStoragePage extends StatelessWidget {
         ),
       ),
       body: ListView.builder(
-        itemCount: 10,
+        itemCount: listSaved.length,
         itemBuilder: (BuildContext context, int index) {
-          return const ListTile(
+          return ListTile(
             leading: Icon(Icons.train),
             trailing: Icon(
               Icons.cloud_download_rounded,
               color: Colors.purple,
             ),
-            title: Text('df'),
+            title: Text(
+              'Ticket ${index + 1}',
+              style: TextStyle(color: Colors.purple.shade400),
+            ),
           );
         },
       ),
@@ -36,6 +66,8 @@ class TicketStoragePage extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+
+            ElevatedButton(onPressed: deleteAll, child: Text('удалить все')),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade100,
@@ -49,7 +81,8 @@ class TicketStoragePage extends StatelessWidget {
                   context: context,
                   builder: (BuildContext context) {
                     return Padding(
-                      padding:  EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom),
                       child: SizedBox(
                         height: 200,
                         child: Center(
@@ -57,25 +90,28 @@ class TicketStoragePage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                            Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20.0),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
                                 child: TextField(
+                                  controller: controller,
                                   textAlign: TextAlign.start,
                                   style: const TextStyle(fontSize: 20),
                                   decoration: InputDecoration(
-                                   errorText: !right ?'Введите корректный Url': '' ,
+                                      errorText: !right
+                                          ? 'Введите корректный Url'
+                                          : '',
                                       hintText: "Введите Url",
                                       helperText: 'Введите Url',
-                                      labelText:'Введите Url' ,
-                                     
+                                      labelText: 'Введите Url',
                                       hintStyle: const TextStyle(
                                           fontWeight: FontWeight.normal),
                                       border: const OutlineInputBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(10))),
                                       contentPadding:
-                                          const EdgeInsets.symmetric(horizontal: 20)),
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 20)),
                                 ),
                               ),
                               const SizedBox(
@@ -89,7 +125,14 @@ class TicketStoragePage extends StatelessWidget {
                                 child: const Text('Добавить',
                                     style: TextStyle(
                                         color: Colors.white, fontSize: 15)),
-                                onPressed: () => Navigator.pop(context),
+                                onPressed: () {
+                                  saver.add(NewFile(
+                                      newUrl: controller.text,
+                                      fileName: '',
+                                      isdownload: false));
+                                  setState(() {});
+                                  Navigator.of(context).pop();
+                                },
                               ),
                             ],
                           ),
