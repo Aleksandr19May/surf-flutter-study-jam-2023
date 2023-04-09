@@ -192,3 +192,12 @@ ______
 ![4](https://user-images.githubusercontent.com/116716020/230787931-8d5f54c7-a60e-426b-bc32-b31a811ecca8.png)
 ![5](https://user-images.githubusercontent.com/116716020/230787935-3b432a5b-a1a5-4029-a830-e5fb5de848f6.png)
 ![6](https://user-images.githubusercontent.com/116716020/230787938-42da96e7-1ddc-4e80-bcd1-c34a42fdb76c.png)
+
+## Видео
+
+
+
+
+https://user-images.githubusercontent.com/116716020/230788763-fdc6c6c5-f4ca-45e9-86ff-86844dea3f0f.mp4
+
+
