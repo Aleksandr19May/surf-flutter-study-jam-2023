@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -84,8 +85,9 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: ListTile(
                     leading: const Icon(Icons.train),
-                    trailing: const Icon(
-                      Icons.cloud_download_rounded,
+                    trailing: IconButton(
+                      onPressed: () {downloadPdf('https://journal-free.ru/download/dachnye-sekrety-11-noiabr-2019.pdf');},
+                      icon: Icon(Icons.cloud_download_rounded) ,
                       color: Colors.purple,
                     ),
                     title: Text(
@@ -186,64 +188,24 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
 }
 
 
+Future<void> downloadPdf(String url) async {
+  Dio dio = Dio();
+
+  try {
+    // Определение директории, где будет сохранен файл PDF
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/file.pdf';
+
+    // Загрузка файла PDF с сервера
+    await dio.download(url, filePath);
+
+    print('PDF загружен: $filePath');
+  } catch (e) {
+    print('Ошибка загрузки PDF: $e');
+  }
+}
 
 
 
 
 
-// class DownloadPdfScreen extends StatefulWidget {
-//   final String pdfUrl;
-
-//   DownloadPdfScreen( this.pdfUrl);
-
-//   @override
-//   _DownloadPdfScreenState createState() => _DownloadPdfScreenState();
-// }
-
-// class _DownloadPdfScreenState extends State<DownloadPdfScreen> {
-//   bool _isLoading = false;
-
-//   Future<void> _downloadPdf() async {
-//     setState(() {
-//       _isLoading = true;
-//     });
-//     try {
-//       final response = await http.get(Uri.parse(widget.pdfUrl));
-//       final bytes = response.bodyBytes;
-//       final appDir = await getApplicationDocumentsDirectory();
-//       final file = File('${appDir.path}/file.pdf');
-//       await file.writeAsBytes(bytes);
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text('Файл успешно загружен'),
-//         ),
-//       );
-//     } catch (error) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text('Ошибка при загрузке файла'),
-//         ),
-//       );
-//     }
-//     setState(() {
-//       _isLoading = false;
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Загрузить PDF'),
-//       ),
-//       body: Center(
-//         child: ElevatedButton(
-//           onPressed: _isLoading ? null : _downloadPdf,
-//           child: _isLoading
-//               ? CircularProgressIndicator()
-//               : Text('Загрузить PDF'),
-//         ),
-//       ),
-//     );
-//   }
-// }
