@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:surf_flutter_study_jam_2023/features/model.dart';
 import 'package:surf_flutter_study_jam_2023/features/ticket_storage/ticket_storage_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Hive.registerAdapter(HiveNewFile());
+  await Hive.initFlutter();
+
+  await Hive.openBox<NewFile>('PDF');
   runApp(const MyApp());
 }
 
@@ -16,7 +23,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const TicketStoragePage(),
+      home: TicketStoragePage(),
     );
   }
 }
