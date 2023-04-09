@@ -1,5 +1,3 @@
-
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -25,7 +23,7 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
     saver = Hive.box<NewFile>('PDF');
   }
 
-  void deleteAll() async {
+  void deleteAll() async { // Стираем данные из Hive
     saver = Hive.box<NewFile>('PDF');
     await saver.clear();
     setState(() {});
@@ -34,8 +32,7 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
   var controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    List <NewFile> listSaved = saver.values.toList();
-    
+    List<NewFile> listSaved = saver.values.toList();
 
     String? _errorText = null;
 
@@ -51,45 +48,59 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         Navigator.of(context).pop();
         controller.text = '';
         setState(() {});
-         ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      backgroundColor: Colors.green,
-      content: Text('Ссылка на файл успешно добавлена!'),
-      duration: Duration(seconds: 2),
-    ),
-  );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Ссылка на файл успешно добавлена!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
       } else {
         _errorText = 'Введите корректный Url';
         setState(() {});
       }
     }
-Future<void> downloadPdf(String url) async {
-  Dio dio = Dio();
 
-  try {
-    // Определение директории, где будет сохранен файл PDF
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/file.pdf';
+    bool _downloading = false;
+    double _progressValue = 0.0;
 
-    // Загрузка файла PDF с сервера
-    await dio.download(url, filePath);
-ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      backgroundColor: Colors.green,
-      content: Text('Файл загружен!'),
-      duration: Duration(seconds: 2),
-    ),);
-    // print('PDF загружен: $filePath');
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      backgroundColor: Colors.red,
-      content: Text('Не удалось загрузить файл $e'),
-      duration: const Duration(seconds: 2),
-    ),);
-    // print('Ошибка загрузки PDF: $e');
-  }
-}
+    Future<void> downloadPdf(String url) async {
+      Dio dio = Dio();
+
+      try {
+        // Определение директории, где будет сохранен файл PDF
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/file.pdf';
+        setState(() {
+          _downloading = true;
+        });
+        // Загрузка файла PDF с сервера
+        await dio.download(url, filePath, onReceiveProgress: (received, total) {
+          if (total != -1) {
+            print(
+                'Received: ${received ~/ 1024 / 1000}МB / Total: ${total ~/ 1024 / 1000}МB');
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Файл загружен!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        // print('PDF загружен: $filePath');
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Не удалось загрузить файл $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        // print('Ошибка загрузки PDF: $e');
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade200,
@@ -111,18 +122,33 @@ ScaffoldMessenger.of(context).showSnackBar(
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: ListTile(
+                    isThreeLine: true ,
                     leading: const Icon(Icons.train),
                     trailing: IconButton(
                       onPressed: () {
-                       
-                        
-                        downloadPdf(listSaved[index].newUrl);},
-                      icon: const Icon(Icons.cloud_download_rounded) ,
+                        downloadPdf(listSaved[index].newUrl);
+                      },
+                      icon: const Icon(Icons.cloud_download_rounded),
                       color: Colors.purple,
                     ),
+                    subtitle:  Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+     
+      Text('Ожидает начало загрузки'),
+      
+      if (_downloading)
+        LinearProgressIndicator(
+          value: _progressValue,
+          backgroundColor: Colors.grey.shade300,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
+        ),
+    ],
+  ),
                     title: Text(
-                      'Ticket ${index + 1}',
+                      'Ticket ${index + 1} ' ,
                       style: TextStyle(color: Colors.purple.shade400),
+                      
                     ),
                   ),
                 );
@@ -216,11 +242,3 @@ ScaffoldMessenger.of(context).showSnackBar(
     );
   }
 }
-
-
-
-
-
-
-
-
