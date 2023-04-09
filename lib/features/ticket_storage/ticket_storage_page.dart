@@ -23,29 +23,48 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
     super.initState();
     saver = Hive.box<NewFile>('PDF');
   }
+
   void deleteAll() async {
-     saver = Hive.box<NewFile>(
-        'PDF'); 
+    saver = Hive.box<NewFile>('PDF');
     await saver.clear();
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   var controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     List listSaved = saver.values.toList();
-    print(listSaved);
+
+    String? _errorText = null;
+
+    void _check() {
+      final login = controller.text;
+
+      if (login.contains('pdf')) {
+        _errorText = null;
+        saver.add(
+            NewFile(newUrl: controller.text, fileName: '', isdownload: false));
+
+        //  Navigator.of(context).pushNamed('/mainScreen');
+        Navigator.of(context).pop();
+        controller.text = '';
+         setState(() {});
+      } else {
+        _errorText = 'Введите корректный Url';
+        setState(() {});
+      }
+     
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade200,
         title: const Text(
           'Хранение билетов',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500),
         ),
       ),
-      body: ListView.builder(
+      body: listSaved.isEmpty ? Center(child: Text('Здесь пока ничего нет',style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),) : ListView.builder(
         itemCount: listSaved.length,
         itemBuilder: (BuildContext context, int index) {
           return ListTile(
@@ -66,7 +85,6 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-
             ElevatedButton(onPressed: deleteAll, child: Text('удалить все')),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -94,15 +112,14 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 20.0),
                                 child: TextField(
+                                  keyboardType: TextInputType.text,
                                   controller: controller,
                                   textAlign: TextAlign.start,
                                   style: const TextStyle(fontSize: 20),
                                   decoration: InputDecoration(
-                                      errorText: !right
-                                          ? 'Введите корректный Url'
-                                          : '',
+                                      errorText: _errorText,
                                       hintText: "Введите Url",
-                                      helperText: 'Введите Url',
+                                      
                                       labelText: 'Введите Url',
                                       hintStyle: const TextStyle(
                                           fontWeight: FontWeight.normal),
@@ -125,14 +142,7 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                                 child: const Text('Добавить',
                                     style: TextStyle(
                                         color: Colors.white, fontSize: 15)),
-                                onPressed: () {
-                                  saver.add(NewFile(
-                                      newUrl: controller.text,
-                                      fileName: '',
-                                      isdownload: false));
-                                  setState(() {});
-                                  Navigator.of(context).pop();
-                                },
+                                onPressed: _check,
                               ),
                             ],
                           ),
@@ -156,7 +166,6 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
     );
   }
 }
-
 
 
 
