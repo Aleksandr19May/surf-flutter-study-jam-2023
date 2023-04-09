@@ -5,10 +5,12 @@ import 'package:surf_flutter_study_jam_2023/features/ticket_storage/ticket_stora
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Hive.registerAdapter(HiveNewFile());
+  if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(HiveNewFile());
+  }
   await Hive.initFlutter();
 
-  await Hive.openBox<NewFile>('PDF');
+  await Hive.openBox<NewFile>('pdf');
   runApp(const MyApp());
 }
 

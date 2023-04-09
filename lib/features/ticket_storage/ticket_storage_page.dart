@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -16,6 +18,8 @@ class TicketStoragePage extends StatefulWidget {
 }
 
 class _TicketStoragePageState extends State<TicketStoragePage> {
+  bool _downloading = false;
+  // bool downloaded = false;
   late Box<NewFile> saver;
   @override
   void initState() {
@@ -23,7 +27,8 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
     saver = Hive.box<NewFile>('PDF');
   }
 
-  void deleteAll() async { // Стираем данные из Hive
+  void deleteAll() async {
+    // Стираем данные из Hive
     saver = Hive.box<NewFile>('PDF');
     await saver.clear();
     setState(() {});
@@ -37,14 +42,16 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
     String? _errorText = null;
 
     void _check() {
+      // Валидация и добавление новой записи
       final login = controller.text;
 
       if (RegExp(r'http.*pdf|https.*pdf').hasMatch(login)) {
         _errorText = null;
-        saver.add(
-            NewFile(newUrl: controller.text, fileName: '', isdownload: false));
-
-        //  Navigator.of(context).pushNamed('/mainScreen');
+        saver.add(NewFile(
+            newUrl: controller.text,
+            fileName: '',
+            isdownload: false,
+            downloadStatus: DownloadStatus.notStarted.toString()));
         Navigator.of(context).pop();
         controller.text = '';
         setState(() {});
@@ -61,10 +68,10 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
       }
     }
 
-    bool _downloading = false;
-    double _progressValue = 0.0;
+    // double _progressValue =0.0;
+    // StreamController<double> _progressStreamController ;
 
-    Future<void> downloadPdf(String url) async {
+    Future<void> downloadPdf(String url, int index) async {
       Dio dio = Dio();
 
       try {
@@ -72,13 +79,13 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         final directory = await getApplicationDocumentsDirectory();
         final filePath = '${directory.path}/file.pdf';
         setState(() {
-          _downloading = true;
+          
+          listSaved[index].changeStatus(DownloadStatus.inProgress);
         });
         // Загрузка файла PDF с сервера
         await dio.download(url, filePath, onReceiveProgress: (received, total) {
           if (total != -1) {
-            print(
-                'Received: ${received ~/ 1024 / 1000}МB / Total: ${total ~/ 1024 / 1000}МB');
+            //  final progress = received / total;
           }
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -88,8 +95,16 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
             duration: Duration(seconds: 2),
           ),
         );
-        // print('PDF загружен: $filePath');
+        setState(() {
+          
+          listSaved[index].changeStatus(DownloadStatus.finished);
+        });
+
+      
       } catch (e) {
+        setState(() {
+          listSaved[index].changeStatus(DownloadStatus.finished);
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.red,
@@ -97,7 +112,6 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
             duration: const Duration(seconds: 2),
           ),
         );
-        // print('Ошибка загрузки PDF: $e');
       }
     }
 
@@ -119,36 +133,32 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
           : ListView.builder(
               itemCount: listSaved.length,
               itemBuilder: (BuildContext context, int index) {
+             
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: ListTile(
-                    isThreeLine: true ,
+                    isThreeLine: true,
                     leading: const Icon(Icons.train),
                     trailing: IconButton(
                       onPressed: () {
-                        downloadPdf(listSaved[index].newUrl);
+                        downloadPdf(listSaved[index].newUrl, index);
                       },
-                      icon: const Icon(Icons.cloud_download_rounded),
+                      icon: Icon(
+                        listSaved[index].downloadStatus == DownloadStatus.finished.toString()
+                            ? Icons.check_circle
+                            : listSaved[index].downloadStatus == DownloadStatus.inProgress.toString()
+                                ? Icons.pause_circle
+                                : Icons.cloud_download_rounded,
+                      ),
                       color: Colors.purple,
                     ),
-                    subtitle:  Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-     
-      Text('Ожидает начало загрузки'),
-      
-      if (_downloading)
-        LinearProgressIndicator(
-          value: _progressValue,
-          backgroundColor: Colors.grey.shade300,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
-        ),
-    ],
-  ),
+                    subtitle: const LinearProgressIndicator(
+                      backgroundColor: Colors.red,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
+                    ),
                     title: Text(
-                      'Ticket ${index + 1} ' ,
+                      'Ticket ${index + 1} ',
                       style: TextStyle(color: Colors.purple.shade400),
-                      
                     ),
                   ),
                 );
@@ -159,8 +169,16 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            ElevatedButton(
-                onPressed: deleteAll, child: const Text('удалить все')),
+            Padding(
+              padding: const EdgeInsets.only(right: 220.0),
+              child: IconButton(
+                  onPressed: deleteAll,
+                  icon: Icon(
+                    Icons.delete_forever,
+                    color: Colors.red,
+                    size: 30,
+                  )),
+            ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade100,
