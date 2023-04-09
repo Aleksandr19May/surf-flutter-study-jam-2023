@@ -156,13 +156,13 @@ class _TicketStoragePageState extends State<TicketStoragePage> {
                           'Ticket ${index + 1} ',
                           style: TextStyle(color: Colors.purple.shade400),
                         ),
-                        IconButton(
-                            onPressed: () {
-                              // PDFScreen(
-                              //   filePath: listSaved[index].newUrl,
-                              // );
-                            },
-                            icon: const Icon(Icons.remove_red_eye_sharp)),
+                        // IconButton(  // Не смог реализовать просмтр пдф файла
+                        //     onPressed: () {
+                        //       // PDFScreen(
+                        //       //   filePath: listSaved[index].newUrl,
+                        //       // );
+                        //     },
+                        //     icon: const Icon(Icons.remove_red_eye_sharp)),
                       ],
                     ),
                   ),
